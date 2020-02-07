@@ -15,4 +15,8 @@ flight_total_delay = aggregate(!is.na(delays$arr_flights), by = list(delays$carr
 
 ggplot(top_n(flight_total_delay,10,x), aes(x = reorder(Group.2,x), y= x))+ geom_bar(stat='identity' ,color='skyblue',fill='steelblue')+ labs(y = 'Total Delays(in mins)', x = 'Airline')+theme(axis.text.x = element_text(angle = 45, hjust = 1), panel.grid.major.y = element_line(color = 'grey'))
 ```
+Question 2
+```{r}
+
+```
 
