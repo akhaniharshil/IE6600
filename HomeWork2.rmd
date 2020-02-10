@@ -2,33 +2,80 @@
 title: "HomeWork2"
 author: "Harshil"
 date: "February 6, 2020"
-output: html_document
+output:
+  html_document: default
+  
 ---
 
 ```{r}
+#importing libraries and data set
+
 delays = read.csv('C:/Users/Harshil/Downloads/airlines_delay.csv', na.string = '')
 
 library(plyr)
 library(ggplot2)
 library(dplyr)
-#flight_total_delay = aggregate(!is.na(delays$arr_delay), by = list(delays$carrier, delays$carrier_name), FUN =sum)
-
-#ggplot(top_n(flight_total_delay,10,x), aes(x = reorder(Group.2,x), y= x))+ geom_bar(stat='identity' ,color='skyblue',fill='steelblue')+ labs(y = 'Total Delays(in mins)', x = 'Airline')+theme(axis.text.x = element_text(angle = 45, hjust = 1), panel.grid.major.y = element_line(color = 'grey'))
+library(scales)
+library(tidyr)
 ```
+
 Question 1
 ```{r}
-top_ten = delays %>% group_by(carrier_name) %>%  summarise(total_delay = sum(arr_delay,na.rm = TRUE)) %>% top_n(10,total_delay) %>% arrange(total_delay)
-ggplot(top_ten,aes(x= reorder(carrier_name,total_delay),y = total_delay))+geom_bar(stat='identity' ,color='skyblue',fill='steelblue')+ labs(y = 'Total Delays(in mins)', x = 'Airline')+theme(axis.text.x = element_text(angle = 45, hjust = 1), panel.grid.major.y = element_line(color = 'grey'))
+top_ten = delays %>%
+  group_by(carrier_name) %>%
+  summarise(total_delay = sum(arr_delay,na.rm = TRUE)) %>% 
+  top_n(10,total_delay) %>% arrange(total_delay)
+
+ggplot(top_ten,aes(x= reorder(carrier_name,total_delay),y = total_delay))+geom_bar(stat='identity' ,color='skyblue',fill='steelblue')+ labs(y = 'Total Delays(in mins)', x = 'Airline')+theme(axis.text.x = element_text(angle = 45, hjust = 1), panel.grid.major.y = element_line(color = 'grey'))+ scale_y_continuous(name="Total Delays(in mins)", labels = comma)
+
 ```
 
 Question 2
 ```{r}
-year_delay = delays %>% group_by(carrier_name,year) %>%  summarise(total_delay_year = sum(arr_delay,na.rm = TRUE)) 
+year_delay = delays %>% 
+  group_by(carrier_name,year) %>%  
+  summarise(total_delay_year = sum(arr_delay,na.rm = TRUE)) 
 
 year_top_ten= merge(year_delay,top_ten, by = 'carrier_name', all.y = T)
 
-ggplot(year_top_ten, aes(x= reorder(carrier_name,total_delay),y = total_delay_year, fill = as.factor(year)))+geom_bar(type = 'stacked', stat='identity')+ labs(y = 'Total Delays(in mins)', x = 'Airline')+theme(axis.text.x = element_text(angle = 45, hjust = 1), panel.grid.major.y = element_line(color = 'grey'))
+ggplot(year_top_ten, aes(x= reorder(carrier_name,total_delay),y = total_delay_year, fill = as.factor(year)))+geom_bar(type = 'stacked', stat='identity')+ labs(y = 'Total Delays(in mins)', x = 'Airline', fill= 'Year')+theme(axis.text.x = element_text(angle = 45, hjust = 1), panel.grid.major.y = element_line(color = 'grey'))+scale_y_continuous(name="Total Delays(in mins)", labels = comma)
 ```
 
+Question 3
 ```{r}
-`
+
+delay_logs = data.frame(lapply(delays[,c('carrier_delay','late_aircraft_delay','nas_delay','security_delay','weather_delay')], FUN = log))
+
+delay_logs_melted = gather(delay_logs)
+
+ggplot(delay_logs_melted, aes(x = value, fill = key)) + geom_density(alpha = .45, na.rm = TRUE) + labs(y= 'density', x= 'Log delay in mins', fill='Delay_type')
+
+```
+
+Question 4
+```{r}
+total_Delays <- delays %>% 
+  group_by(carrier) %>%  
+  summarise(carrier_delay = sum(carrier_delay,na.rm = TRUE), late_aircraft_delay = sum(late_aircraft_delay, na.rm = TRUE), nas_delay = sum(nas_delay, na.rm = TRUE), security_delay = sum(security_delay, na.rm = TRUE), weather_delay = sum(weather_delay, na.rm = TRUE))
+
+total_Delays_melted <- gather(total_Delays, 'delay_type', 'sum_delay', -1)
+
+ggplot(total_Delays_melted, aes(x = delay_type, y= carrier, fill = sum_delay))+ geom_tile()
+```
+
+Question 5
+
+```{r}
+
+total_Delays_year <- delays %>% 
+  group_by(year) %>%  
+  summarise(carrier_delay = sum(carrier_delay,na.rm = TRUE), late_aircraft_delay = sum(late_aircraft_delay, na.rm = TRUE), nas_delay = sum(nas_delay, na.rm = TRUE), security_delay = sum(security_delay, na.rm = TRUE), weather_delay = sum(weather_delay, na.rm = TRUE))
+
+total_Delays_year_melted <- gather(total_Delays_year, 'delay_type', 'sum_delay', -1)
+
+ggplot(total_Delays_year_melted, aes(x = factor(year), y= sum_delay, group = delay_type, color = delay_type))+ geom_line()+ geom_point()
+
+```
+
+
+
