@@ -26,7 +26,11 @@ top_ten = delays %>%
   summarise(total_delay = sum(arr_delay,na.rm = TRUE)) %>% 
   top_n(10,total_delay) %>% arrange(total_delay)
 
-ggplot(top_ten,aes(x= reorder(carrier_name,total_delay),y = total_delay))+geom_bar(stat='identity' ,color='skyblue',fill='steelblue')+ labs(y = 'Total Delays(in mins)', x = 'Airline')+theme(axis.text.x = element_text(angle = 45, hjust = 1), panel.grid.major.y = element_line(color = 'grey'))+ scale_y_continuous(name="Total Delays(in mins)", labels = comma)
+ggplot(top_ten,aes(x= reorder(carrier_name,total_delay),y = total_delay))+
+  geom_bar(stat='identity' ,color='skyblue',fill='steelblue')+
+  labs(y = 'Total Delays(in mins)', x = 'Airline')+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), panel.grid.major.y = element_line(color = 'grey'))+
+  scale_y_continuous(name="Total Delays(in mins)", labels = comma)
 
 ```
 
@@ -38,7 +42,12 @@ year_delay = delays %>%
 
 year_top_ten= merge(year_delay,top_ten, by = 'carrier_name', all.y = T)
 
-ggplot(year_top_ten, aes(x= reorder(carrier_name,total_delay),y = total_delay_year, fill = as.factor(year)))+geom_bar(type = 'stacked', stat='identity')+ labs(y = 'Total Delays(in mins)', x = 'Airline', fill= 'Year')+theme(axis.text.x = element_text(angle = 45, hjust = 1), panel.grid.major.y = element_line(color = 'grey'))+scale_y_continuous(name="Total Delays(in mins)", labels = comma)
+ggplot(year_top_ten, aes(x= reorder(carrier_name,total_delay),y = total_delay_year, fill = as.factor(year)))+
+  geom_bar(type = 'stacked', stat='identity')+ 
+  labs(y = 'Total Delays(in mins)', x = 'Airline', fill= 'Year')+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), panel.grid.major.y = element_line(color = 'grey'))+
+  scale_y_continuous(name="Total Delays(in mins)", labels = comma)
+
 ```
 
 Question 3
@@ -48,7 +57,9 @@ delay_logs = data.frame(lapply(delays[,c('carrier_delay','late_aircraft_delay','
 
 delay_logs_melted = gather(delay_logs)
 
-ggplot(delay_logs_melted, aes(x = value, fill = key)) + geom_density(alpha = .45, na.rm = TRUE) + labs(y= 'density', x= 'Log delay in mins', fill='Delay_type')
+ggplot(delay_logs_melted, aes(x = value, fill = key)) + 
+  geom_density(alpha = .45, na.rm = TRUE) + 
+  labs(y= 'density', x= 'Log delay in mins', fill='Delay_type')
 
 ```
 
@@ -73,7 +84,8 @@ total_Delays_year <- delays %>%
 
 total_Delays_year_melted <- gather(total_Delays_year, 'delay_type', 'sum_delay', -1)
 
-ggplot(total_Delays_year_melted, aes(x = factor(year), y= sum_delay, group = delay_type, color = delay_type))+ geom_line()+ geom_point()
+ggplot(total_Delays_year_melted, aes(x = factor(year), y= sum_delay, group = delay_type, color = delay_type))+
+  geom_line()+ geom_point()
 
 ```
 
