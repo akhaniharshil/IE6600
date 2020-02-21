@@ -1,0 +1,60 @@
+---
+title: "Project 1"
+author: "Harshil"
+date: "February 14, 2020"
+output: html_document
+---
+```{r}
+fmarket_raw <- read.csv("C:/Users/Harshil/Downloads/fmarket.csv", na.strings="", stringsAsFactors=FALSE)
+
+library(dplyr)
+library(lubridate)
+library(tidyr)
+library(ggplot2)
+
+old_data <- fmarket_raw %>%  filter(nchar(updateTime)==4) %>% group_by(State) %>% summarise(totalOld = n()) %>% arrange(desc(totalOld))
+
+new_data <- fmarket_raw %>% filter(nchar(updateTime)>4) %>% group_by(State) %>% summarise(totalNew = n()) %>% arrange(desc(totalNew))
+
+fmarket <- fmarket_raw
+fmarket$updateTime <- parse_date_time(fmarket$updateTime, c('%b %d %Y %I:%M%p', '%m/%d/%Y %H:%M:%S %p', '%Y'))
+
+#new_data$updateTime <- parse_date_time(new_data$updateTime, c('%b %d %Y %I:%M%p', '%m/%d/%Y %H:%M:%S %p'))
+
+totalByState <- fmarket %>%group_by(State) %>% summarise(total = n()) %>% arrange(desc(total))
+
+totalreportByState <- fmarket %>% filter(Organic != '-') %>% group_by(State) %>% summarise(totalReported = n()) %>% arrange(desc(totalReported))
+
+totalOrganic <- fmarket %>% filter(Organic == 'Y') %>% group_by(State) %>% summarise(totalOrganic = n()) %>% arrange(desc(totalOrganic)) %>% merge(totalreportByState, by= 'State')
+
+totalOrganic$percent_organic <- (totalOrganic$totalOrganic/totalOrganic$totalReported)*100
+
+mini_market <- fmarket[,c(1,11,30:58)]
+
+pivotGoods <- mini_market %>% gather(key = 'Goods', value = 'YesNo', -FMID, -State)
+
+agg_By_State_gather <- pivotGoods %>% filter( YesNo == 'Y') %>% group_by(State, Goods) %>% summarise(totalGoods = n()) 
+
+agg_By_State <- agg_By_State_gather%>% spread( key = Goods, value = totalGoods)
+agg_By_State <- merge(totalByState,agg_By_State, by= 'State')
+
+percent_market <- agg_By_State_gather
+percent_market <- merge(totalByState,percent_market, by= 'State')
+
+
+percent_market$percent <- (percent_market$totalGoods/percent_market$total)*100
+percent_spread <- spread(percent_market[,c(1,3,5)], key= Goods, value = percent)
+
+#agg_By_State <- merge(totalreportByState,agg_By_State, by= 'State', all= T)
+#agg_By_State$Organicperc <- agg_By_State$Organic/agg_By_State$total*100
+#agg_By_State$Organicperc_reported <- agg_By_State$Organic/agg_By_State$totalReported*100
+#sum(agg_By_State$Organic, na.rm= T)/ sum(agg_By_State$total, na.rm= T)
+#sum(agg_By_State$Organic, na.rm= T)/ sum(agg_By_State$totalReported, na.rm= T)
+
+```
+
+```{r}
+percent_market %>%group_by(State) %>% top_n(-5)
+
+```
+
