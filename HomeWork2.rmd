@@ -17,7 +17,6 @@ output:
 
 delays = read.csv('C:/Users/Harshil/Downloads/airlines_delay.csv', na.string = '')
 
-library(plyr)
 library(ggplot2)
 library(dplyr)
 library(scales)
