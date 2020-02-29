@@ -2,12 +2,15 @@
 title: "Project 1"
 author: "Harshil"
 date: "February 14, 2020"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 Importing library, data, cleaning:
 
 ```{r}
+
 library(dplyr)
 library(lubridate)
 library(tidyr)
@@ -47,7 +50,13 @@ awardvsreq_plot <- ggplot(grant, aes(x= as.factor(Fiscal.Year), y= Amount, group
 
 ggsave('awardvsreq_plot.png', awardvsreq_plot, dpi=300)
 
-ggplot(top_n(application_type,6,Number.of.Requests), aes(x = reorder(Applicant.Type,Number.of.Requests), y= Application, fill= Accepted_Not.Accepted)) + geom_bar(type = 'stacked', stat='identity')+ scale_fill_discrete(name = 'Application status', labels = c('Awarded','Not Awarded'))+ labs(title = "Top 3 Applicants for the Grant And their Approvals in 2016", x= 'Applicant Type' , y= 'Applications')
+grantapplicant <- ggplot(top_n(application_type,8,Number.of.Requests), aes(x = reorder(Applicant.Type,Number.of.Requests), y= Application, fill= Accepted_Not.Accepted)) + geom_bar(type = 'stacked', stat='identity')+ scale_fill_discrete(name = 'Application status', labels = c('Awarded','Not Awarded'))+ labs(title = "Top 4 Applicants for the Grant And their Approvals in 2016", x= 'Applicant Type' , y= 'Applications')+theme(axis.text.x = element_text(angle = 30, hjust = 1), panel.grid.major.y = element_line(color = 'grey'))
+
+ggsave('grantapplicant_plot.png', grantapplicant, dpi=450, scale= 3)
+
+grantapplicant
+
+awardvsreq_plot
 
 ```
 
@@ -87,7 +96,8 @@ market_short <- percent_market %>% group_by(Goods) %>% top_n(-3)
 
 market_short$percent <- 100 - market_short$percent
 
-treemap(market_short,c('Goods' ,'State'), vSize = 'percent', type = 'index', title= "Goods and Shortage", overlap.labels = 0.5, align.labels = list(c("left", "top"), c("center", "bottom")))
+goodshortage <- treemap(market_short,c('Goods' ,'State'), vSize = 'percent', type = 'index', title= "Goods and Shortage", overlap.labels = 0.5, align.labels = list(c("left", "top"), c("center", "bottom")))
+
 
 
 ```
@@ -103,11 +113,13 @@ totalOrganic$percent_organic <- (totalOrganic$totalOrganic/totalOrganic$totalRep
 
 totalOrganic$state <- totalOrganic$State
 
-plot_usmap(data = totalOrganic , values = "percent_organic") + 
+organicstate_plot <- plot_usmap(data = totalOrganic , values = "percent_organic") + 
   scale_fill_continuous(name = "Organic Percentage", label = scales::comma) + 
   theme(legend.position = "right")+ labs(title = "Reported Organic market % by States")
 
+ggsave('organicstate.png',organicstate_plot ,dpi =320)
 
+organicstate_plot
 
 ```
 
@@ -127,9 +139,12 @@ us_payment <- fmarket[,c(24:28,61)] %>% gather(key = 'payment', value = 'YesNo',
 
 payment_count <- merge(payment_count, us_payment, by= 'payment')
 
-ggplot(payment_count, aes(x= reorder(payment,totalMarket), y = totalPaymentMarket, fill= Region, label = totalPaymentMarket))+ geom_bar(type = 'stacked', stat='identity')+ labs(y = 'Count of Markets accepting Payments', x = 'Types of Payment', fill= 'Regions')+ geom_text(size = 3, position = position_stack(vjust = 0.5))+ geom_hline(yintercept=8791, linetype="dashed")+
+payment_method_plot <- ggplot(payment_count, aes(x= reorder(payment,totalMarket), y = totalPaymentMarket, fill= Region, label = totalPaymentMarket))+ geom_bar(type = 'stacked', stat='identity')+ labs(y = 'Count of Markets accepting Payments', x = 'Types of Payment', fill= 'Regions')+ geom_text(size = 3, position = position_stack(vjust = 0.5))+ geom_hline(yintercept=8791, linetype="dashed")+
  annotate(geom="text",x=3, y=9200, label="Total Markets in US(approx 8800) accepting Cash")+ ylim(0,9200)
 
+ggsave('payment_method_plot.png', payment_method_plot, dpi=320)
+
+payment_method_plot
 ```
 
 Market Not Participating in any program
@@ -162,6 +177,8 @@ SNAP$type <- 'SNAP'
 
 pal <- wes_palette("Zissou1", 100, type = "continuous")
 
-ggplot(rbind(NP, WIC, WICcash, SFMNP, SNAP), aes(x = Region, y= type, fill = AverageGoods))+ geom_tile()+ labs(y = 'Types Payments', x = 'Region', fill= 'Variety of Goods')
+payment_variety<- ggplot(rbind(NP, WIC, WICcash, SFMNP, SNAP), aes(x = Region, y= type, fill = AverageGoods))+ geom_tile()+ labs(y = 'Types Payments', x = 'Region', fill= 'Variety of Goods', title = "Effect of programs on variety of food")
 
+ggsave("payment_variet.png", payment_variety, dpi = 320)
+payment_variety
 ```
